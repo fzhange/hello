@@ -9,6 +9,8 @@ import (
 
 	// don't forget this
 
+	_ "hello/filters"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
