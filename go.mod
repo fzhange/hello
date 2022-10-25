@@ -6,6 +6,8 @@ require github.com/beego/beego/v2 v2.0.5
 
 require github.com/smartystreets/goconvey v1.6.4
 
+require github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+
 require (
 	github.com/beego/bee/v2 v2.0.4 // indirect
 	github.com/beego/beego v1.12.11

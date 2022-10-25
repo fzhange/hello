@@ -8,7 +8,6 @@ import (
 
 func init() {
 	web.InsertFilter("/*", web.BeforeExec, filterFunc)
-
 }
 
 func filterFunc(ctx *context.Context) {
