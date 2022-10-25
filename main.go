@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"hello/controllers"
+	"hello/demo"
 
 	"github.com/beego/beego/logs"
-	"github.com/beego/beego/v2/server/web"
 
 	// don't forget this
 
@@ -21,15 +19,17 @@ func init() {
 }
 
 func main() {
-	web.BConfig.Listen.EnableAdmin = true
+	//  ---- beego start  ----
+	// web.BConfig.Listen.EnableAdmin = true
 	// web.BConfig.Listen.AdminAddr = "localhost"
 	// web.BConfig.Listen.AdminPort = 8088
+	// web.AddNamespace(controllers.UserNameSpace)
+	// web.Run()
+	//  ---- beego end  ----
 
-	web.AddNamespace(controllers.UserNameSpace)
-
-	i := 10
-	fmt.Printf("%d %T \n", i, i)
-
-	web.Run()
+	// ---- demo start  ----
+	// we should disable beego server, when we use demo program. beego server and demo server are conflict.
+	demo.StartServer()
+	// ---- demo end  ----
 
 }
