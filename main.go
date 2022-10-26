@@ -31,5 +31,8 @@ func main() {
 	// we should disable beego server, when we use demo program. beego server and demo server are conflict.
 	demo.StartServer()
 	// ---- demo end  ----
+	var a, b int
+	if a, ok = b.(int);  {
 
+	}
 }
