@@ -1,12 +1,11 @@
 package main
 
 import (
-	"hello/demo"
-
 	"github.com/beego/beego/logs"
 
 	// don't forget this
 
+	"hello/demo"
 	_ "hello/filters"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -29,10 +28,6 @@ func main() {
 
 	// ---- demo start  ----
 	// we should disable beego server, when we use demo program. beego server and demo server are conflict.
-	demo.StartServer()
+	demo.Initiator()
 	// ---- demo end  ----
-	var a, b int
-	if a, ok = b.(int);  {
-
-	}
 }

@@ -1,5 +1,12 @@
 package demo
 
+import (
+	"fmt"
+	"hello/demo/token"
+
+	"github.com/beego/beego/logs"
+)
+
 /**
 What the heck is a JWT?
 In short, it's a signed JSON object that does something useful (for example, authentication).
@@ -32,87 +39,21 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IndhZ3NsYW5lIn0.ov6d8XtwQoK
 7. The server checks the signature on the JWT to make sure the JWT was originally created by the same server
 8. The server reads the claims and gives permission to the request to operate as “wagslane”
 **/
-import (
-	"fmt"
 
-	"github.com/beego/beego/logs"
-	"github.com/golang-jwt/jwt/v4"
-)
-
-var signKey = []byte("SecretYouShouldHide")
-
-func createToken() (string, error) {
-
-	claims := &jwt.StandardClaims{
-		ExpiresAt: 3600 * 1000,
-		Issuer:    "test",
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return token.SignedString(signKey)
-
-	// token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-	// 	"foo":     "bar",
-	// 	"nbf":     time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-	// 	"expired": time.Now().Add(1 * time.Minute),
-	// })
-	// return token.SignedString(signKey)
-}
-
-func validate(tokenString string) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return signKey, nil
-	})
-
-	// expired := "expired"
-
-	fmt.Println("You>>>", token.Claims)
-	if token.Valid {
-		fmt.Println("You look nice today")
-	} else if ve, ok := err.(*jwt.ValidationError); ok {
-		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-			fmt.Println("That's not even a token")
-		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-			// Token is either expired or not active yet
-			fmt.Println("Timing is everything")
-		} else {
-			fmt.Println("Couldn't handle this token:", err)
-		}
-	} else {
-		fmt.Println("Couldn't handle this token:", err)
-	}
-}
-
-func StartServer() {
-	if tokenString, err := createToken(); err != nil {
+func Initiator() {
+	var secretKey = "12345678901234567890123456789012"
+	jwtMaker, err := token.NewJWTMaker(secretKey)
+	if err != nil {
 		logs.Error(err)
-	} else {
-		// var tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIiLCJleHAiOjE1MDAwLCJpc3MiOiJ0ZXN0In0.HE7fK0xOQwFEr4WDgRWj4teRPZ6i3GLwD5YCm6Pwu_c"
-		fmt.Println(">>>", tokenString)
-		// validate("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHBpcmVkIjoiMjAyMi0xMC0yNlQxOTozMzozOS45OTE4MzYrMDg6MDAiLCJmb28iOiJiYXIiLCJuYmYiOjE0NDQ0Nzg0MDB9.Et6PQMbqiln6CzWo81ONtSeM0C7Ceu0z1MphpVMtE7k")
-		validate(tokenString)
+		// return
 	}
-
-	// Token from another example.  This token is expired
-	// var tokenString = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIiLCJleHAiOjE1MDAwLCJpc3MiOiJ0ZXN0In0.HE7fK0xOQwFEr4WDgRWj4teRPZ6i3GLwD5YCm6Pwu_c"
-
-	// token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-	// 	return []byte("AllYourBase"), nil
-	// })
-
-	// if token.Valid {
-	// 	fmt.Println("You look nice today")
-	// } else if ve, ok := err.(*jwt.ValidationError); ok {
-	// 	if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-	// 		fmt.Println("That's not even a token")
-	// 	} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-	// 		// Token is either expired or not active yet
-	// 		fmt.Println("Timing is everything")
-	// 	} else {
-	// 		fmt.Println("Couldn't handle this token:", err)
-	// 	}
-	// } else {
-	// 	fmt.Println("Couldn't handle this token:", err)
-	// }
+	tokenStr, err := jwtMaker.CreateToken("fzhange", 8888000)
+	if err != nil {
+		logs.Error(err)
+		// return
+	}
+	logs.Info("tokenStr", tokenStr)
+	// var expiredTokenStr = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFmZjFmMTY1LTY0NmEtNDY2Ni04OWU1LTQ1ZWM2MjZiMmFmZiIsInVzZXJuYW1lIjoiZnpoYW5nZSIsImlzc3VlZF9hdCI6IjIwMjItMTAtMjdUMTk6NTk6MjEuNDQ3KzA4OjAwIiwiZXhwaXJlZF9hdCI6IjIwMjItMTAtMjdUMTk6NTk6MjEuNDQ3MDAxKzA4OjAwIn0.-4UvbNCxD3BgTEQWTnQHj7unzrKz-0H4-BV9Jzjcneo"
+	paylaod, err := jwtMaker.VerifyToken(tokenStr)
+	fmt.Printf("%+v", paylaod, err)
 }
