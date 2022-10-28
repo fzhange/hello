@@ -53,16 +53,15 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 	In our case, we convert it to SigningMethodHMAC because we’re using HS256,
 	which is an instance of the SigningMethodHMAC struct.
 	*/
-	keyFunc := func(token *jwt.Token) (interface{}, error) {
+
+	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			//the algorithm of the token doesn’t match with our signing algorithm
 			return nil, ErrInvalidToken
 		}
 		return []byte(maker.secretKey), nil
-	}
-
-	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
+	})
 
 	if err != nil {
 		// there might be 2 different scenarios:
