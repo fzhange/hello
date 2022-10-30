@@ -4,77 +4,69 @@ import (
 	"hello/dao"
 	"hello/models"
 
-	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web/context"
 )
 
-func init() {
+func Login(ctx *context.Context) {
+	CommonResponse(func(ctx *context.Context) (data interface{}, err error) {
+		requestUser := models.User{}
 
-	UserNameSpace = web.NewNamespace(
-		"/token",
+		if err := ctx.BindJSON(&requestUser); err != nil {
+			return nil, err
+		}
 
-		web.NSPost(
-			"/login", CommonResponse(func(ctx *context.Context) (data interface{}, err error) {
-				requestUser := models.User{}
+		dbUser := models.User{}
+		err = dao.GetUserByName(&dbUser, requestUser.Name)
 
-				if err := ctx.BindJSON(&requestUser); err != nil {
-					return nil, err
-				}
+		if err != nil && err.Error() == dao.ErrUserNotExist.Error() {
+			return nil, dao.ErrUserNotExist
+		}
 
-				dbUser := models.User{}
-				err = dao.GetUserByName(&dbUser, requestUser.Name)
+		if dbUser.Password != requestUser.Password {
+			return nil, dao.ErrUserPassword
+		}
 
-				if err != nil && err.Error() == dao.ErrUserNotExist.Error() {
-					return nil, dao.ErrUserNotExist
-				}
+		return "login success", nil
+	})(ctx)
+}
 
-				if dbUser.Password != requestUser.Password {
-					return nil, dao.ErrUserPassword
-				}
+func Exit(ctx *context.Context) {
+	user := models.User{}
 
-				return "login success", nil
-			}),
-		),
+	ctx.JSONResp(user)
+}
 
-		web.NSPost(
-			"/exit", func(ctx *context.Context) {
+func Register(ctx *context.Context) {
+	CommonResponse(func(ctx *context.Context) (interface{}, error) {
 
-				user := models.User{}
+		requestUser := models.User{}
 
-				ctx.JSONResp(user)
-			},
-		),
+		logs.Info("Registering", requestUser)
 
-		web.NSPost(
-			"/register", CommonResponse(func(ctx *context.Context) (interface{}, error) {
+		if err := ctx.BindJSON(&requestUser); err != nil {
+			return nil, err
+		}
 
-				requestUser := models.User{}
+		if requestUser.Name == "" {
+			return nil, dao.ErrUserNameIsEmpty
+		}
 
-				if err := ctx.BindJSON(&requestUser); err != nil {
-					return nil, err
-				}
+		if requestUser.Password == "" {
+			return nil, dao.ErrUserPasswordIsEmpty
+		}
 
-				if requestUser.Name == "" {
-					return nil, dao.ErrUserNameIsEmpty
-				}
-
-				if requestUser.Password == "" {
-					return nil, dao.ErrUserPasswordIsEmpty
-				}
-
-				dbUser := models.User{}
-				err := dao.GetUserByName(&dbUser, requestUser.Name)
-				if err != nil && err.Error() == dao.ErrUserNotExist.Error() {
-					pkId, err := dao.InserOneUser(&requestUser)
-					if err == nil {
-						return pkId, nil
-					} else {
-						return nil, err
-					}
-				} else {
-					return nil, dao.ErrUserRepeat
-				}
-			}),
-		),
-	)
+		dbUser := models.User{}
+		err := dao.GetUserByName(&dbUser, requestUser.Name)
+		if err != nil && err.Error() == dao.ErrUserNotExist.Error() {
+			pkId, err := dao.InserOneUser(&requestUser)
+			if err == nil {
+				return pkId, nil
+			} else {
+				return nil, err
+			}
+		} else {
+			return nil, dao.ErrUserRepeat
+		}
+	})(ctx)
 }
